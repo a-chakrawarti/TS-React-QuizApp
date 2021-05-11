@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import QuestionCard from "./components/QuestionCard";
 import { fetchQuizQuestions, QuestionState, Difficulty } from "./API";
 import { GlobalStyle, Wrapper } from "./App.styles";
+
 export type MouseEvent = React.MouseEvent<HTMLButtonElement>;
 
 export type AnswerObject = {
@@ -21,16 +22,13 @@ const App = () => {
   const [score, setScore] = useState(0);
   const [isGameOver, setIsGameOver] = useState(true);
 
-  // console.log(fetchQuizQuestions(TOTAL_QUESTIONS, Difficulty.EASY));
-  // console.log(questions);
-  // Try-catch
   const startTrivia = async () => {
     setIsLoading(true);
     setIsGameOver(false);
 
     const newQuestions = await fetchQuizQuestions(
       TOTAL_QUESTIONS,
-      Difficulty.EASY
+      Difficulty.HARD
     );
 
     setQuestions(newQuestions);
@@ -48,6 +46,7 @@ const App = () => {
       if (correct) {
         setScore((prevScore) => prevScore + 1);
       }
+
       const answerObject = {
         question: questions[questionNumber].question,
         answer,
@@ -74,11 +73,13 @@ const App = () => {
       <GlobalStyle />
       <Wrapper>
         <h1>React Quiz</h1>
+
         {isGameOver || userAnswers.length === TOTAL_QUESTIONS ? (
           <button className="start" onClick={startTrivia}>
             Start
           </button>
         ) : null}
+
         {!isGameOver && <p className="score">Score: {score}</p>}
         {isLoading && <p>Loading Question...</p>}
         {!isLoading && !isGameOver && (
@@ -91,14 +92,20 @@ const App = () => {
             callback={checkAnswers}
           />
         )}
-        {!isGameOver &&
-        !isLoading &&
-        userAnswers.length === questionNumber + 1 &&
-        questionNumber !== TOTAL_QUESTIONS - 1 ? (
-          <button className="next" onClick={nextQuestion}>
-            Next Question
-          </button>
-        ) : null}
+
+        {(() => {
+          const areQuestionsLeft =
+            !isGameOver &&
+            !isLoading &&
+            userAnswers.length === questionNumber + 1 && // Doesn't allow you to skip the question
+            questionNumber !== TOTAL_QUESTIONS - 1;
+
+          return areQuestionsLeft ? (
+            <button className="next" onClick={nextQuestion}>
+              Next Question
+            </button>
+          ) : null;
+        })()}
       </Wrapper>
     </React.Fragment>
   );
